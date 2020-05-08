@@ -1,24 +1,48 @@
 'use strict';
 
+const fs = require('fs');
+const util = require('util');
+const path = require('path');
+
+const COLORS = {
+  'info': { fg: '\x1b[36m', bg: '\x1b[46m' },
+  'debug': { fg: '\x1b[33m', bg: '\x1b[43m' },
+  'error': { fg: '\x1b[31m', bg: '\x1b[41m' },
+}
 
 // Class responsible for logging
-// takes in stdout (info, debug etc.) and stderr (errors) objects that must implement .write method
 class Logger {
-  constructor(stdout, stderr) {
-    this.stdout = stdout;
-    this.stderr = stderr || stdout;
+  constructor(logDirectory) {
+    const logFile = path.join(logDirectory, `${new Date().toISOString().slice(0, 10)}.log`);
+    this.fileStream = fs.createWriteStream(logFile, { flags: 'a' });
+  }
+
+  write(level, msg) {
+    const date = new Date().toISOString();
+    const color = COLORS[level];
+    if (level === 'error') {
+      process.stderr.write(`${color.bg}ERROR\x1b[0m ${color.fg}${date}\t${msg}\x1b[0m`);
+    } else {
+      process.stdout.write(`${color.bg}${level.toUpperCase()}\x1b[0m ${color.fg}${date}\t${msg}\x1b[0m`);
+    }
+
+    const logObj = { level, date, msg };
+    this.fileStream.write(JSON.stringify(logObj) + ',\n');
   }
 
   info(...args) {
-    this.stdout.write('INFO\t' + args.map(a => String(a)).join(' ') + '\n');
+    const msg = util.format(args);
+    this.write('info', msg);
   }
 
   debug(...args) {
-    this.stdout.write('DEBUG\t' + args.map(a => String(a)).join(' ') + '\n');
+    const msg = util.format(args);
+    this.write('debug', msg);
   }
 
   error(...args) {
-    this.stderr.write('ERROR\t' + args.map(a => String(a)).join(' ') + '\n');
+    const msg = util.format(args);
+    this.write('error', msg);
   }
 }
 

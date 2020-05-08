@@ -5,12 +5,15 @@ const url = require('url');
 const http = require('http');
 const path = require('path');
 
+const { Logger } = require('./logger');
+
+const APP_PATH = process.cwd();
 
 // Application class that handles server routing and file serving
 class Application {
-  constructor(port, logger) {
+  constructor(port) {
     this.port = parseInt(port, 10);
-    this.logger = logger;
+    this.logger = new Logger(path.join(APP_PATH, 'logs'));
     this.server = http.createServer(this.serverHandler());
   }
 
