@@ -1,12 +1,9 @@
-const http = require('http');
+const { Application } = require('./engine/application');
 
-const server = http.createServer((req, res) => {
-  console.log('request received...');
+const main = async () => {
+  const app = new Application(9000);
+  app.start();
+}
 
-  res.write('Hello, world!');
-  res.end();
-});
-
-server.listen(9000);
-console.log('Server on :9000');
+main();
 
