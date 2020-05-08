@@ -8,8 +8,9 @@ const path = require('path');
 
 // Application class that handles server routing and file serving
 class Application {
-  constructor(port) {
+  constructor(port, logger) {
     this.port = parseInt(port, 10);
+    this.logger = logger;
     this.server = http.createServer(this.serverHandler());
   }
 
@@ -19,7 +20,7 @@ class Application {
   }
 
   serverError(response, err) {
-    console.log(err);
+    this.logger.error(err);
     response.writeHead(500);
     response.end('internal server error', 'utf-8');
   }
@@ -92,7 +93,7 @@ class Application {
 
   start() {
     this.server.listen(this.port);
-    console.log(`Server started on port ${this.port}`);
+    this.logger.info(`server started on port ${this.port}`);
   }
 }
 
