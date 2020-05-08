@@ -6,18 +6,19 @@ const http = require('http');
 const path = require('path');
 
 
+// Application class that handles server routing and file serving
 class Application {
   constructor(port) {
     this.port = parseInt(port, 10);
     this.server = http.createServer(this.serverHandler);
   }
 
+  // Basic server routing
   serverHandler(request, response) {
+    // Convert query url (?key=value) to js object ({ key: value })
     const { pathname, query } = url.parse(request.url);
     request.pathname = pathname;
     request.query = Object.fromEntries(query.split('&').map(q => q.split('=')));
-
-    console.log(request.pathname, request.query);
 
     // Route to the appropriate function
     if (pathname.startsWith('/static/')) {
@@ -29,6 +30,7 @@ class Application {
     response.end();
   }
 
+  // Function that finds and serves a static file
   serveStatic(request, response) {
     response.write('serving static files');
     response.end();
