@@ -10,30 +10,84 @@ const path = require('path');
 class Application {
   constructor(port) {
     this.port = parseInt(port, 10);
-    this.server = http.createServer(this.serverHandler);
+    this.server = http.createServer(this.serverHandler());
   }
 
-  // Basic server routing
-  serverHandler(request, response) {
-    // Convert query url (?key=value) to js object ({ key: value })
-    const { pathname, query } = url.parse(request.url);
-    request.pathname = pathname;
-    request.query = Object.fromEntries(query.split('&').map(q => q.split('=')));
+  notFound(response) {
+    response.writeHead(404);
+    response.end('page not found', 'utf-8');
+  }
 
-    // Route to the appropriate function
-    if (pathname.startsWith('/static/')) {
-      this.serverStatic(request, response)
-      return;
-    }
-
-    response.write(`hi there!\n${pathname}`);
-    response.end();
+  serverError(response, err) {
+    console.log(err);
+    response.writeHead(500);
+    response.end('internal server error', 'utf-8');
   }
 
   // Function that finds and serves a static file
-  serveStatic(request, response) {
-    response.write('serving static files');
+  async serveStatic(request, response) {
+    const fileName = request.pathname.replace('/static/', '');
+    const filePath = path.join(__dirname, '..', 'static', fileName);
+    const fileMimeType = {
+        '.js': 'text/javascript',
+        '.css': 'text/css',
+      }[String(path.extname(filePath)).toLowerCase()] || 'application/octet-stream';
+
+    try {
+      const file = await fs.promises.readFile(filePath);
+      response.writeHead(200, { 'Content-Type': fileMimeType });
+      response.end(file, 'utf-8');
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        this.notFound(response);
+      } else {
+        this.serverError(response, err);
+      }
+    }
+  }
+
+  // Function that renders html to the user
+  serveHtml(request, response) {
+    response.write('serving html files');
     response.end();
+  }
+
+  // Function that is responsible for handling /api route
+  // following json rpc 2.0 specification (check readme.md for specification link)
+  serveApi(request, response) {
+    response.write('serving api routes');
+    response.end();
+  }
+
+  // Basic server routing
+  serverHandler() {
+    const self = this;
+
+    return async function(request, response) {
+      // Convert query url (?key=value) to js object ({ key: value })
+      let { pathname, query } = url.parse(request.url);
+    
+      if (pathname !== '/' && pathname[pathname.length - 1] === '/') {
+        pathname = pathname.slice(0, -2);
+      }
+
+      request.pathname = pathname;
+
+      if (typeof query === 'string') {
+        request.query = Object.fromEntries(query.split('&').map(q => q.split('=')));
+      } else {
+        request.query = '';
+      }
+
+      // Route to the appropriate function
+      if (pathname.startsWith('/static/')) {
+        await self.serveStatic(request, response)
+      } else if (pathname === '/api' || pathname === '/api/') {
+        self.serveApi(request, response);
+      } else {
+        self.serveHtml(request, response);
+      }
+    }
   }
 
   start() {
