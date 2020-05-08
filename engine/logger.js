@@ -1,8 +1,8 @@
 'use strict';
 
-const fs = require('fs');
-const util = require('util');
-const path = require('path');
+import fs from 'fs';
+import util from 'util';
+import path from 'path';
 
 const COLORS = {
   info: { fg: '\x1b[36m', bg: '\x1b[46m' },
@@ -11,7 +11,7 @@ const COLORS = {
 };
 
 // Class responsible for logging
-class Logger {
+export class Logger {
   constructor(logDirectory) {
     const logFile = path.join(
       logDirectory,
@@ -54,5 +54,3 @@ class Logger {
     this.write('error', msg);
   }
 }
-
-module.exports = { Logger };

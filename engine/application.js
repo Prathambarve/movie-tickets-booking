@@ -1,18 +1,19 @@
 'use strict';
 
-const fs = require('fs');
-const url = require('url');
-const http = require('http');
-const path = require('path');
+import fs from 'fs';
+import url from 'url';
+import http from 'http';
+import path from 'path';
 
-const { Logger } = require('./logger');
+import { Logger } from './logger.js';
 
 const APP_PATH = process.cwd();
 
 // Application class that handles server routing and file serving
-class Application {
-  constructor(port) {
+export class Application {
+  constructor(hostname, port) {
     this.port = parseInt(port, 10);
+    this.hostname = hostname;
     this.logger = new Logger(path.join(APP_PATH, 'logs'));
     this.server = http.createServer(this.serverHandler());
   }
@@ -31,7 +32,7 @@ class Application {
   // Function that finds and serves a static file
   async serveStatic(request, response) {
     const fileName = request.pathname.replace('/static/', '');
-    const filePath = path.join(__dirname, '..', 'static', fileName);
+    const filePath = path.join(APP_PATH, 'static', fileName);
     const fileMimeType =
       {
         '.js': 'text/javascript',
@@ -71,7 +72,9 @@ class Application {
 
     return async function (request, response) {
       // Convert query url (?key=value) to js object ({ key: value })
-      let { pathname, query } = url.parse(request.url);
+      let { pathname, query } = new url.URL(
+        `http://${self.hostname}${request.url}`,
+      );
 
       if (pathname !== '/' && pathname[pathname.length - 1] === '/') {
         pathname = pathname.slice(0, -2);
@@ -103,5 +106,3 @@ class Application {
     this.logger.info(`server started on port ${this.port}`);
   }
 }
-
-module.exports = { Application };
