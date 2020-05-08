@@ -6,5 +6,11 @@
   "repository": "https://github.com/habiiev/movie-theater.git",
   "author": "Oleksii Habiiev <admin@habiiev.wtf>",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "scripts": {
+    "prettier": "prettier --config .prettierrc --ignore-path .prettierignore --write **/*.{js,css,html}"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.5"
+  }
 }

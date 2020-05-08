@@ -5,15 +5,18 @@ const util = require('util');
 const path = require('path');
 
 const COLORS = {
-  'info': { fg: '\x1b[36m', bg: '\x1b[46m' },
-  'debug': { fg: '\x1b[33m', bg: '\x1b[43m' },
-  'error': { fg: '\x1b[31m', bg: '\x1b[41m' },
-}
+  info: { fg: '\x1b[36m', bg: '\x1b[46m' },
+  debug: { fg: '\x1b[33m', bg: '\x1b[43m' },
+  error: { fg: '\x1b[31m', bg: '\x1b[41m' },
+};
 
 // Class responsible for logging
 class Logger {
   constructor(logDirectory) {
-    const logFile = path.join(logDirectory, `${new Date().toISOString().slice(0, 10)}.log`);
+    const logFile = path.join(
+      logDirectory,
+      `${new Date().toISOString().slice(0, 10)}.log`,
+    );
     this.fileStream = fs.createWriteStream(logFile, { flags: 'a' });
   }
 
@@ -21,9 +24,15 @@ class Logger {
     const date = new Date().toISOString();
     const color = COLORS[level];
     if (level === 'error') {
-      process.stderr.write(`${color.bg}ERROR\x1b[0m ${color.fg}${date}\t${msg}\x1b[0m`);
+      process.stderr.write(
+        `${color.bg}ERROR\x1b[0m ${color.fg}${date}\t${msg}\x1b[0m`,
+      );
     } else {
-      process.stdout.write(`${color.bg}${level.toUpperCase()}\x1b[0m ${color.fg}${date}\t${msg}\x1b[0m`);
+      process.stdout.write(
+        `${color.bg}${level.toUpperCase()}\x1b[0m ${
+          color.fg
+        }${date}\t${msg}\x1b[0m`,
+      );
     }
 
     const logObj = { level, date, msg };
@@ -47,4 +56,3 @@ class Logger {
 }
 
 module.exports = { Logger };
-
