@@ -30,11 +30,11 @@ export class Server {
       }
       // Route to the appropriate function
       if (pathname.startsWith('/static/')) {
-        await application.static(request, response);
+        await application.serveStatic(request, response);
       } else if (pathname === '/api') {
-        application.api(request, response);
+        application.serveApi(request, response);
       } else {
-        application.html(request, response);
+        application.serveHtml(request, response);
       }
     };
   }
