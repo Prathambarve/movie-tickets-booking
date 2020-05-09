@@ -13,26 +13,18 @@ const COLORS = {
 // Class responsible for logging
 export class Logger {
   constructor(logDirectory) {
-    const logFile = path.join(
-      logDirectory,
-      `${new Date().toISOString().slice(0, 10)}.log`,
-    );
+    const logFile = path.join(logDirectory, `${new Date().toISOString().slice(0, 10)}.log`);
     this.fileStream = fs.createWriteStream(logFile, { flags: 'a' });
   }
 
   write(level, msg) {
     const date = new Date().toISOString();
     const color = COLORS[level];
+    const line = `${color.bg}${level.toUpperCase()}\x1b[0m ${color.fg}${date}\t${msg}\x1b[0m\n`;
     if (level === 'error') {
-      process.stderr.write(
-        `${color.bg}ERROR\x1b[0m ${color.fg}${date}\t${msg}\x1b[0m`,
-      );
+      process.stderr.write(line);
     } else {
-      process.stdout.write(
-        `${color.bg}${level.toUpperCase()}\x1b[0m ${
-          color.fg
-        }${date}\t${msg}\x1b[0m`,
-      );
+      process.stdout.write(line);
     }
 
     const logObj = { level, date, msg };

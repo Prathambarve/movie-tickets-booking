@@ -1,6 +1,6 @@
 {
   "name": "movie-theater",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Movie tickets booking application written in node.js",
   "main": "index.js",
   "repository": "https://github.com/habiiev/movie-theater.git",

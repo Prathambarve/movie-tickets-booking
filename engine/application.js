@@ -81,9 +81,7 @@ export class Application {
   serveStatic(request, response) {
     const fileName = request.pathname.replace('/static/', '');
     const filePath = path.join(STATIC_DIR, fileName);
-    const fileMimeType =
-      MIME_TYPES[path.extname(filePath).toLowerCase()] ||
-      'application/octet-stream';
+    const fileMimeType = MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
 
     const data = this.cache.get(fileName);
     if (data) {
@@ -107,7 +105,7 @@ export class Application {
     response.end();
   }
 
-  run() {
-    this.server.start();
+  shutdown() {
+    this.server.stop();
   }
 }

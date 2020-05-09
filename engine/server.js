@@ -9,6 +9,8 @@ export class Server {
     this.hostname = hostname;
     this.application = application;
     this.instance = http.createServer(this.listener(application));
+    this.instance.listen(this.port, this.hostname);
+    this.application.logger.info(`server on ${this.hostname}:${this.port}`);
   }
 
   listener(application) {
@@ -22,9 +24,7 @@ export class Server {
       request.pathname = pathname;
 
       if (typeof query === 'string') {
-        request.query = Object.fromEntries(
-          query.split('&').map(q => q.split('=')),
-        );
+        request.query = Object.fromEntries(query.split('&').map(q => q.split('=')));
       } else {
         request.query = '';
       }
@@ -39,8 +39,11 @@ export class Server {
     };
   }
 
-  start() {
-    this.instance.listen(this.port, this.hostname);
-    this.application.logger.info(`server on ${this.hostname}:${this.port}`);
+  stop() {
+    this.instance.close(err => {
+      if (err) {
+        this.application.logger.error(err.stack);
+      }
+    });
   }
 }
