@@ -2,6 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import http from 'http';
 
 import { Logger } from './logger.js';
 
@@ -22,15 +23,13 @@ export class Application {
     this.logger = new Logger(path.join(APP_PATH, 'logs'));
   }
 
-  notFound(response) {
-    response.writeHead(404);
-    response.end('page not found', 'utf-8');
-  }
+  error(response, code, err) {
+    if (err !== undefined) {
+      this.logger.error(err);
+    }
 
-  serverError(response, err) {
-    this.logger.error(err);
-    response.writeHead(500);
-    response.end('internal server error', 'utf-8');
+    response.writeHead(code);
+    response.end(http.STATUS_CODES[code] + '\n', 'utf-8');
   }
 
   // Function that finds and serves a static file
@@ -47,9 +46,9 @@ export class Application {
       response.end(file, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
-        this.notFound(response);
+        this.error(response, 404);
       } else {
-        this.serverError(response, err);
+        this.error(response, 500, err);
       }
     }
   }
