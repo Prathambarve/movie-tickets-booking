@@ -10,6 +10,7 @@
     "email": "admin@habiiev.wtf",
     "url": "https://habiiev.wtf/"
   },
+  "module": "commonjs",
   "main": "run.js",
   "scripts": {
     "format": "prettier --config .prettierrc --ignore-path .prettierignore --write **/*.{js,json,yml,css,html}",

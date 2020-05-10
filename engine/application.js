@@ -24,10 +24,27 @@ const MIME_TYPES = {
   '.txt': 'text/plain',
 };
 
-const JSONRC_ERRORS = {
+const JSONRPC_ERRORS = {
   '-32700': {
     code: -32700,
     message: 'Parse error',
+  },
+  '-32600': {
+    code: -32600,
+    message: 'Invalid Request',
+  },
+  '-32601': {
+    code: -32601,
+    message: 'Method not found',
+  },
+
+  '-32602': {
+    code: -32602,
+    message: 'Invalid params',
+  },
+  '-32603': {
+    code: -32603,
+    message: 'Internal error',
   },
 };
 
@@ -106,7 +123,7 @@ class Application {
           const jsonResult = JSON.parse(data);
           resolve(jsonResult);
         } catch (err) {
-          reject(err);
+          reject({ err, data });
         }
       });
     });
@@ -133,6 +150,21 @@ class Application {
     response.end();
   }
 
+  // Handles a single jsonrpc request object (validation, calls methods, notifications etc.)
+  async apiCall(body) {
+    const apiMethod = this.api.get(body.method);
+    if (apiMethod === undefined)
+      return JSON.stringify({ jsonrpc: '2.0', error: JSONRPC_ERRORS['-32601'], id: body.id || null });
+
+    if (apiMethod.type === 'notification') {
+      apiMethod.handler(this, body);
+      return;
+    }
+
+    const result = await apiMethod.handler(this, body);
+    return result;
+  }
+
   // Function that is responsible for handling /api route
   // following json rpc 2.0 specification (check readme.md for specification link)
   async serveApi(request, response) {
@@ -146,26 +178,29 @@ class Application {
     try {
       body = await this.parseJsonBody(request);
     } catch (err) {
-      this.logger.error(err.stack);
-      response.end(JSON.stringify({ jsonrpc: '2.0', error: JSONRC_ERRORS['-32700'], id: null }));
+      this.logger.error(err.err.stack, err.data);
+      response.end(JSON.stringify({ jsonrpc: '2.0', error: JSONRPC_ERRORS['-32700'], id: null }));
       return;
     }
 
-    // TODO: Change all errors to normal ones
-    if (body.jsonrpc !== '2.0') {
-      response.end(JSON.stringify({ jsonrpc: '2.0', err: true }));
+    // Check if sent json is an array or an object
+    if (typeof body !== 'object') {
+      response.end(JSON.stringify({ jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: null }));
       return;
     }
 
-    const apiMethod = this.api.get(body.method);
+    // if requst body is an array, handle each object in the array on its own
+    let result;
+    if (Array.isArray(body)) {
+      result = [];
+      for (const r of body) {
+        const methodResult = await this.apiCall(r);
+        if (methodResult !== undefined) result.push(methodResult);
+      }
+    } else result = await this.apiCall(body);
 
-    if (apiMethod === undefined) {
-      response.end(JSON.stringify({ jsonrpc: '2.0', err: true }));
-      return;
-    }
-
-    const result = apiMethod.method(body);
-    response.end(JSON.stringify(result));
+    if (result === undefined || result.length === 0) response.end();
+    else response.end(JSON.stringify(result));
   }
 
   shutdown() {
