@@ -9,6 +9,7 @@ trim_trailing_whitespace = true
 
 [*.{js,json}]
 indent_size = 2
+insert_final_newline = true
 
 [*.{html,css}]
 indent_size = 4

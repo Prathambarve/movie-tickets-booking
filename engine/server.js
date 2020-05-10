@@ -1,9 +1,9 @@
 'use strict';
 
-import url from 'url';
-import http from 'http';
+const url = require('url');
+const http = require('http');
 
-export class Server {
+class Server {
   constructor(hostname, port, application) {
     this.port = port;
     this.hostname = hostname;
@@ -15,7 +15,7 @@ export class Server {
 
   listener(application) {
     return async (request, response) => {
-      // Convert query url (?key=value) to js object ({ key: value })
+      // Convert query url (?key=value) to js object ({ key: value }) and remove trailing slash from pathname
       let { pathname, query } = new url.URL(`http://127.0.0.1${request.url}`);
 
       if (pathname !== '/' && pathname[pathname.length - 1] === '/') {
@@ -47,3 +47,5 @@ export class Server {
     });
   }
 }
+
+module.exports = { Server };
