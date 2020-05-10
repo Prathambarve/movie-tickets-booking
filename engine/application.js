@@ -10,7 +10,6 @@ const fsp = fs.promises;
 
 const APP_PATH = process.cwd();
 const STATIC_DIR = path.join(APP_PATH, 'static');
-const API_DIR = path.join(APP_PATH, 'api');
 
 const MIME_TYPES = {
   '.js': 'text/javascript',
@@ -55,7 +54,7 @@ class Application {
 
     this.config = config;
 
-    this.cacheApi(API_DIR);
+    this.cacheApi(path.join(APP_PATH, 'api'));
     this.cacheDir(STATIC_DIR);
   }
 
@@ -72,7 +71,6 @@ class Application {
       }
     }
 
-    const a = this;
     fs.watch(
       dirPath,
       debounce((_, f) => {
@@ -80,9 +78,9 @@ class Application {
         // Invalidate require's cache, to get an updated version
         delete require.cache[require.resolve(filePath)];
         const apiMethod = require(filePath);
-        a.api.set(apiMethod.name, apiMethod);
+        this.api.set(apiMethod.name, apiMethod);
 
-        a.logger.debug(filePath, 'changed, updating method: ', apiMethod.name);
+        this.logger.debug(filePath, 'changed, updating method: ', apiMethod.name);
       }, 1000),
     );
   }
@@ -189,8 +187,12 @@ class Application {
       return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: body.id };
     }
 
-    const result = await apiMethod.handler(this, body);
-    return result;
+    try {
+      const result = await apiMethod.handler(this, body.params);
+      return { jsonrpc: '2.0', id: body.id, result };
+    } catch (err) {
+      return { jsonrpc: '2.0', id: body.id, error: err };
+    }
   }
 
   // Function that is responsible for handling /api route
