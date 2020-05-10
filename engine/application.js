@@ -4,8 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
-const Server = require('./server');
-const Logger = require('./logger');
 const debounce = require('../helpers/debounce');
 
 const fsp = fs.promises;
@@ -52,7 +50,6 @@ const JSONRPC_ERRORS = {
 // Application class that handles server routing and file serving
 class Application {
   constructor(config) {
-    this.logger = new Logger(path.join(APP_PATH, 'logs'));
     this.api = new Map();
     this.cache = new Map();
 
@@ -60,8 +57,6 @@ class Application {
 
     this.cacheApi(API_DIR);
     this.cacheDir(STATIC_DIR);
-
-    this.server = new Server(this.config.get('server').host, this.config.get('server').port, this);
   }
 
   // Cache api methods to Map
