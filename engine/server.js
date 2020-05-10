@@ -48,4 +48,4 @@ class Server {
   }
 }
 
-module.exports = { Server };
+module.exports = Server;
