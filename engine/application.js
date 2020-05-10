@@ -6,6 +6,7 @@ const http = require('http');
 
 const { Server } = require('./server');
 const { Logger } = require('./logger');
+const debounce = require('../helpers/debounce');
 
 const fsp = fs.promises;
 
@@ -61,6 +62,8 @@ class Application {
     this.server = new Server(host, port, this);
   }
 
+  // Cache api methods to Map
+  // Hot reload for methods
   async cacheApi(dirPath) {
     const allFiles = await fsp.readdir(dirPath, { withFileTypes: true });
     for (const file of allFiles) {
@@ -71,8 +74,24 @@ class Application {
         this.api.set(apiMethod.name, apiMethod);
       }
     }
+
+    const a = this;
+    fs.watch(
+      dirPath,
+      debounce((_, f) => {
+        const filePath = path.join(dirPath, f);
+        // Invalidate require's cache, to get an updated version
+        delete require.cache[require.resolve(filePath)];
+        const apiMethod = require(filePath);
+        a.api.set(apiMethod.name, apiMethod);
+
+        a.logger.debug(filePath, 'changed, updating method: ', apiMethod.name);
+      }, 1000),
+    );
   }
 
+  // Cache static file to Map object
+  // Reload methods on change
   async cacheFile(filePath) {
     const fileName = filePath.slice(STATIC_DIR.length + 1);
     try {
@@ -84,6 +103,8 @@ class Application {
     }
   }
 
+  // Cache static files in a directory (recursive)
+  // Reload files on change
   async cacheDir(dirPath) {
     const allFiles = await fsp.readdir(dirPath, { withFileTypes: true });
     for (const file of allFiles) {
@@ -153,12 +174,22 @@ class Application {
   // Handles a single jsonrpc request object (validation, calls methods, notifications etc.)
   async apiCall(body) {
     const apiMethod = this.api.get(body.method);
-    if (apiMethod === undefined)
-      return JSON.stringify({ jsonrpc: '2.0', error: JSONRPC_ERRORS['-32601'], id: body.id || null });
+    if (apiMethod === undefined) return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32601'], id: body.id || null };
 
+    // If the method is a notification start running it and return
     if (apiMethod.type === 'notification') {
       apiMethod.handler(this, body);
       return;
+    }
+
+    // If the request does not have an id or it is not an int, return an error
+    if (body.id === undefined || typeof body.id !== 'number') {
+      return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: null };
+    }
+
+    // If request has invalid params (it should be undefined or an 'object') return an invalid request error
+    if (typeof body.params !== undefined && typeof body.params !== 'object') {
+      return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: body.id };
     }
 
     const result = await apiMethod.handler(this, body);
@@ -189,7 +220,7 @@ class Application {
       return;
     }
 
-    // if requst body is an array, handle each object in the array on its own
+    // if request body is an array, handle each object in the array on its own
     let result;
     if (Array.isArray(body)) {
       result = [];
