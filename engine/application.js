@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const http = require('http');
 
 const debounce = require('../helpers/debounce');
 
@@ -10,17 +9,6 @@ const fsp = fs.promises;
 
 const APP_PATH = process.cwd();
 const STATIC_DIR = path.join(APP_PATH, 'static');
-
-const MIME_TYPES = {
-  '.js': 'text/javascript',
-  '.css': 'text/css',
-  '.html': 'text/html',
-  '.jpeg': 'image/jpeg',
-  '.jpg': 'image/jpeg',
-  '.png': 'image/png',
-  '.ico': 'image/x-icon',
-  '.txt': 'text/plain',
-};
 
 const JSONRPC_ERRORS = {
   '-32700': {
@@ -64,8 +52,9 @@ class Application {
     const allFiles = await fsp.readdir(dirPath, { withFileTypes: true });
     for (const file of allFiles) {
       const filePath = path.join(dirPath, file.name);
-      if (file.isDirectory()) await this.cacheApi(filePath);
-      else {
+      if (file.isDirectory()) {
+        await this.cacheApi(filePath);
+      } else {
         const apiMethod = require(filePath);
         this.api.set(apiMethod.name, apiMethod);
       }
@@ -104,26 +93,46 @@ class Application {
     const allFiles = await fsp.readdir(dirPath, { withFileTypes: true });
     for (const file of allFiles) {
       const filePath = path.join(dirPath, file.name);
-      if (file.isDirectory()) {
-        await this.cacheDir(filePath);
-      } else {
-        await this.cacheFile(filePath);
-      }
+      if (file.isDirectory()) await this.cacheDir(filePath);
+      else await this.cacheFile(filePath);
     }
 
-    fs.watch(dirPath, (_, f) => {
-      const filePath = path.join(dirPath, f);
-      this.cacheFile(filePath);
-    });
+    fs.watch(
+      dirPath,
+      debounce((_, f) => {
+        const filePath = path.join(dirPath, f);
+        this.cacheFile(filePath);
+      }, 1000),
+    );
   }
 
-  error(response, code, err) {
-    if (err !== undefined) {
-      this.logger.error(err);
+  // Handles a single jsonrpc request object (validation, calls methods, notifications etc.)
+  async apiCall(body) {
+    const apiMethod = this.api.get(body.method);
+    if (apiMethod === undefined) return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32601'], id: body.id || null };
+
+    // If the method is a notification start running it and return
+    if (apiMethod.type === 'notification') {
+      apiMethod.handler(this, body.params);
+      return;
     }
 
-    response.writeHead(code, { 'Content-Type': 'text/plain' });
-    response.end(http.STATUS_CODES[code] + '\n', 'utf-8');
+    // If the request does not have an id or it is not an int, return an error
+    if (body.id === undefined || typeof body.id !== 'number') {
+      return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: null };
+    }
+
+    // If request has invalid params (it should be undefined or an 'object') return an invalid request error
+    if (typeof body.params !== 'undefined' && typeof body.params !== 'object') {
+      return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: body.id };
+    }
+
+    try {
+      const result = await apiMethod.handler(this, body.params);
+      return { jsonrpc: '2.0', id: body.id, result };
+    } catch (err) {
+      return { jsonrpc: '2.0', id: body.id, error: err };
+    }
   }
 
   async parseJsonBody(request) {
@@ -145,94 +154,22 @@ class Application {
     });
   }
 
-  // Function that finds and serves a static file
-  serveStatic(request, response) {
-    const fileName = request.pathname.replace('/static/', '');
-    const filePath = path.join(STATIC_DIR, fileName);
-    const fileMimeType = MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
-
-    const data = this.cache.get(fileName);
-    if (data) {
-      response.writeHead(200, { 'Content-Type': fileMimeType });
-      response.end(data);
-    } else {
-      this.error(response, 404);
-    }
-  }
-
-  // Function that renders html to the user
-  serveHtml(_, response) {
-    response.write('serving html files');
-    response.end();
-  }
-
-  // Handles a single jsonrpc request object (validation, calls methods, notifications etc.)
-  async apiCall(body) {
-    const apiMethod = this.api.get(body.method);
-    if (apiMethod === undefined) return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32601'], id: body.id || null };
-
-    // If the method is a notification start running it and return
-    if (apiMethod.type === 'notification') {
-      apiMethod.handler(this, body);
-      return;
-    }
-
-    // If the request does not have an id or it is not an int, return an error
-    if (body.id === undefined || typeof body.id !== 'number') {
-      return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: null };
-    }
-
-    // If request has invalid params (it should be undefined or an 'object') return an invalid request error
-    if (typeof body.params !== undefined && typeof body.params !== 'object') {
-      return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: body.id };
-    }
-
-    try {
-      const result = await apiMethod.handler(this, body.params);
-      return { jsonrpc: '2.0', id: body.id, result };
-    } catch (err) {
-      return { jsonrpc: '2.0', id: body.id, error: err };
-    }
+  async parseApiCall(request) {
+    return new Promise((resolve, reject) => {
+      this.parseJsonBody(request)
+        .then(body => {
+          // Check if sent json is an array or an object
+          if (typeof body !== 'object') reject({ jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: null });
+          resolve(body);
+        })
+        .catch(() => {
+          reject({ jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: null });
+        });
+    });
   }
 
   // Function that is responsible for handling /api route
   // following json rpc 2.0 specification (check readme.md for specification link)
-  async serveApi(request, response) {
-    if (request.method !== 'POST') {
-      this.error(response, 405);
-      return;
-    }
-
-    let body;
-
-    try {
-      body = await this.parseJsonBody(request);
-    } catch (err) {
-      this.logger.error(err.err.stack, err.data);
-      response.end(JSON.stringify({ jsonrpc: '2.0', error: JSONRPC_ERRORS['-32700'], id: null }));
-      return;
-    }
-
-    // Check if sent json is an array or an object
-    if (typeof body !== 'object') {
-      response.end(JSON.stringify({ jsonrpc: '2.0', error: JSONRPC_ERRORS['-32600'], id: null }));
-      return;
-    }
-
-    // if request body is an array, handle each object in the array on its own
-    let result;
-    if (Array.isArray(body)) {
-      result = [];
-      for (const r of body) {
-        const methodResult = await this.apiCall(r);
-        if (methodResult !== undefined) result.push(methodResult);
-      }
-    } else result = await this.apiCall(body);
-
-    if (result === undefined || result.length === 0) response.end();
-    else response.end(JSON.stringify(result));
-  }
-
   shutdown() {
     this.server.stop();
   }
