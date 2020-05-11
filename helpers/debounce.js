@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = (func, delay) => {
   let inDebounce;
   return function () {

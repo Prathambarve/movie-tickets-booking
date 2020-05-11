@@ -11,7 +11,7 @@ const APP_PATH = process.cwd();
 const CONFIG_PATH = path.join(APP_PATH, 'conf');
 const LOG_PATH = path.join(APP_PATH, 'logs');
 
-const main = async () => {
+(async () => {
   const config = await new Config(CONFIG_PATH).load();
   const logger = new Logger(LOG_PATH);
   const app = new Application(config);
@@ -28,6 +28,4 @@ const main = async () => {
 
   process.on('SIGINT', stop);
   process.on('SIGTERM', stop);
-};
-
-main();
+})();
