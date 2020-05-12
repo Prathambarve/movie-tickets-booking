@@ -4,6 +4,6 @@ CREATE TABLE migrations (
   created_at DATE NOT NULL DEFAULT timezone('utc', now())
 );
 
-ALTER TABLE migrations ADD CONSTRAINT pkey_id PRIMARY KEY (id);
-ALTER TABLE migrations ADD CONSTRAINT unique_id UNIQUE (id);
+ALTER TABLE migrations ADD CONSTRAINT migrations_pkey_id PRIMARY KEY (id);
+ALTER TABLE migrations ADD CONSTRAINT migrations_unique_id UNIQUE (id);
 

@@ -84,10 +84,10 @@ const getRanMigrationIds = async db => {
   }
 
   // Build the final sql code
-  let finalSql = 'BEGIN;';
+  let finalSql = 'BEGIN;\n';
   for (const migration of migrationFiles.entries()) {
     finalSql += migration[1].sql;
-    finalSql += `INSERT INTO migrations (id, name) VALUES ('${migration[0]}', '${migration[1].name}');`;
+    finalSql += `INSERT INTO migrations (id, name) VALUES ('${migration[0]}', '${migration[1].name}');\n`;
   }
   finalSql += 'COMMIT;';
 
