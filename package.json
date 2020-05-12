@@ -14,6 +14,7 @@
   "module": "commonjs",
   "scripts": {
     "dev": "node ./utils/runner.js",
+    "migrate": "node ./utils/migrate.js",
     "format": "prettier --config .prettierrc --ignore-path .prettierignore --write **/*.{js,json,yml,css,html}",
     "lint": "eslint -c ./.eslintrc.json --color **/*.js"
   },

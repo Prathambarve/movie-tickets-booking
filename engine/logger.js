@@ -32,17 +32,17 @@ class Logger {
   }
 
   info(...args) {
-    const msg = util.format(args);
+    const msg = util.format('%s', args.join(' '));
     this.write('info', msg);
   }
 
   debug(...args) {
-    const msg = util.inspect(args);
+    const msg = util.inspect(args, { showHidden: true, showProxy: true, depth: Infinity, colors: true, getters: true });
     this.write('debug', msg);
   }
 
   error(...args) {
-    const msg = util.format(args);
+    const msg = util.format('%s', args.join(''));
     this.write('error', msg);
   }
 }

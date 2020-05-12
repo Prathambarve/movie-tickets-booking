@@ -33,4 +33,3 @@ stdin.on('data', key => {
     proc = cp.fork(MAIN_FILE, OPTIONS);
   }
 });
-

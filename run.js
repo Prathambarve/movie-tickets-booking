@@ -25,7 +25,7 @@ const DOTENV_PATH = path.join(APP_PATH, '.env');
 
   app.db = new Database(config.get('database'), app);
   // Ping the database (will throw an error if unsuccessful)
-  await app.db.query('select 1+1 as sum');
+  await app.db.query('select 1+1');
 
   app.server = new Server(config.get('server'), app);
 
