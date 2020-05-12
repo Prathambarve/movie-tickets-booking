@@ -5,7 +5,7 @@ const pg = require('pg');
 class Database {
   constructor(config, application) {
     this.application = application;
-    this.pool = new pg.Pool(config.pg);
+    this.pool = new pg.Pool({ connectionString: config.pgConnection });
   }
 
   async query(sql, params = []) {

@@ -15,10 +15,14 @@ const LOG_PATH = path.join(APP_PATH, 'logs');
 const DOTENV_PATH = path.join(APP_PATH, '.env');
 
 (async () => {
-  await dotenv(DOTENV_PATH);
+  const logger = new Logger(LOG_PATH);
+  try {
+    await dotenv(DOTENV_PATH);
+  } catch (err) {
+    logger.error(err);
+  }
 
   const config = await new Config(CONFIG_PATH).load();
-  const logger = new Logger(LOG_PATH);
   const app = new Application(config);
 
   Object.assign(app, { logger });

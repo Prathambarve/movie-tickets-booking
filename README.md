@@ -6,7 +6,7 @@ A place where you can easily buy movie tickets.
 
 This is a pet project of mine, mimicking website for a cinema, where you can buy tickets for movie screenings.
 
-Project built using JavaScript and Node.js.
+Project is built using Node.js and PostgreSQL.
 
 The project has minimal amount of dependencies needed for the project.
 I wanted to build something all by myself, starting from basic http router, to logs management, migrations, etc.
