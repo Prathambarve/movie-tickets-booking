@@ -13,6 +13,7 @@
   "main": "run.js",
   "module": "commonjs",
   "scripts": {
+    "dev": "node ./utils/runner.js",
     "format": "prettier --config .prettierrc --ignore-path .prettierignore --write **/*.{js,json,yml,css,html}",
     "lint": "eslint -c ./.eslintrc.json --color **/*.js"
   },
