@@ -12,6 +12,6 @@ module.exports = {
       };
 
     const result = await application.db.query('SELECT id, city, address, title FROM cinema WHERE id=$1', [params[0]]);
-    return result.rows[0];
+    return result.rows[0] || {};
   },
 };
