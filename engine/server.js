@@ -19,9 +19,9 @@ const MIME_TYPES = {
 };
 
 class Server {
-  constructor(hostname, port, application) {
-    this.port = port;
-    this.hostname = hostname;
+  constructor(config, application) {
+    this.port = config.port;
+    this.hostname = config.hostname;
     this.application = application;
     this.instance = http.createServer(this.listener(application));
     this.instance.listen(this.port, this.hostname);
@@ -58,6 +58,8 @@ class Server {
     response.end();
   }
 
+  // Function that is responsible for handling /api route
+  // following json rpc 2.0 specification (check readme.md for specification link)
   async serveApi(request, response) {
     if (request.method !== 'POST') {
       this.error(response, 405);

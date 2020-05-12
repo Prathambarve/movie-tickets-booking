@@ -37,7 +37,7 @@ class Logger {
   }
 
   debug(...args) {
-    const msg = util.format(args);
+    const msg = util.inspect(args);
     this.write('debug', msg);
   }
 

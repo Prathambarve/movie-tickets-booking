@@ -168,10 +168,9 @@ class Application {
     });
   }
 
-  // Function that is responsible for handling /api route
-  // following json rpc 2.0 specification (check readme.md for specification link)
   shutdown() {
     this.server.stop();
+    this.db.close();
   }
 }
 

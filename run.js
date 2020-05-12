@@ -5,6 +5,7 @@ const path = require('path');
 const Logger = require('./engine/logger');
 const Config = require('./engine/config');
 const Server = require('./engine/server');
+const Database = require('./engine/database');
 const Application = require('./engine/application');
 const dotenv = require('./utils/dotenv');
 
@@ -22,7 +23,11 @@ const DOTENV_PATH = path.join(APP_PATH, '.env');
 
   Object.assign(app, { logger });
 
-  app.server = new Server(config.get('server').host, config.get('server').port, app);
+  app.db = new Database(config.get('database'), app);
+  // Ping the database (will throw an error if unsuccessful)
+  await app.db.query('select 1+1 as sum');
+
+  app.server = new Server(config.get('server'), app);
 
   const stop = async () => {
     logger.info('graceful shutdown');
