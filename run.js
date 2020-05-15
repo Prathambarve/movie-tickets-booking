@@ -15,13 +15,9 @@ const LOG_PATH = path.join(APP_PATH, 'logs');
 const DOTENV_PATH = path.join(APP_PATH, '.env');
 
 (async () => {
-  const logger = new Logger(LOG_PATH);
-  try {
-    await dotenv(DOTENV_PATH);
-  } catch (err) {
-    logger.error(err);
-  }
+  await dotenv(DOTENV_PATH);
 
+  const logger = new Logger(LOG_PATH);
   const config = await new Config(CONFIG_PATH).load();
   const app = new Application(config);
 
@@ -40,4 +36,12 @@ const DOTENV_PATH = path.join(APP_PATH, '.env');
 
   process.on('SIGINT', stop);
   process.on('SIGTERM', stop);
+
+  const logError = err => {
+    logger.error(err.stack);
+  };
+
+  process.on('uncaughtException', logError);
+  process.on('warning', logError);
+  process.on('unhandledRejection', logError);
 })();
