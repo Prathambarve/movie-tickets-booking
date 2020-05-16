@@ -2,6 +2,25 @@
 
 A place where you can easily buy movie tickets.
 
+## Running the project
+
+### Docker way
+
+- Rename `.env.example` to `.env`
+  **If you change the port in `.env`, be sure to change it in `docker-compose.yml`**
+- Run `docker-compose up`
+- Visit [localhost:9000](http://localhost:9000) (or the port you used in `.env` file)
+
+### Without docker
+
+To run the application without docker you should have postgres client installed and available for connections.
+
+- Rename `.env.example` to `.env`.
+- Set `PG_CONN` to your postgres connection string
+- Run `npm install`
+- To start the application with development server run `npm run dev`
+- Visit [localhost:9000](http://localhost:9000) (or the port you used in `.env` file)
+
 ## About
 
 This is a pet project of mine, mimicking website for a cinema, where you can buy tickets for movie screenings.

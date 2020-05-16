@@ -4,7 +4,7 @@ services:
     build: .
     command: 'npm run dev -- --auto'
     ports:
-      - '9000:9000'
+      - 9000:9000
     volumes:
       - '.:/app'
       - '/app/node_modules'
@@ -14,7 +14,7 @@ services:
   postgres:
     image: 'postgres:12'
     ports:
-      - '35432:5432'
+      - '5432:5432'
     environment:
       POSTGRES_USER: 'user'
       POSTGRES_PASSWORD: 'pass'
