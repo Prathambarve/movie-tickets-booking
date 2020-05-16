@@ -6,4 +6,3 @@ CREATE TABLE migrations (
 
 ALTER TABLE migrations ADD CONSTRAINT migrations_pkey_id PRIMARY KEY (id);
 ALTER TABLE migrations ADD CONSTRAINT migrations_unique_id UNIQUE (id);
-
