@@ -16,12 +16,12 @@ const debounce = require('../helpers/debounce');
 const APP_PATH = process.cwd();
 const MAIN_FILE = path.join(APP_PATH, 'run.js');
 const OPTIONS = { execArgv: ['--trace-warnings'] };
-const WATCHED_EXTENSIONS = ['js', '.env', 'sql'];
-const IGNORED_DIRS = ['node_modules', 'api', 'static', '.git', '.githooks'];
+const WATCHED_EXTENSIONS = ['.js', '.env', '.sql'];
+const IGNORED_DIRS = ['node_modules', 'api', 'static', 'sql', '.git', '.githooks'];
 
 const auto = process.argv.indexOf('--auto') !== -1;
 
-if (!auto) console.log("\x1b[45m'r' - restarts the script 'q' - quits\x1b[0m");
+if (!auto) console.log('\x1b[45mr - restarts the script q - quits\x1b[0m');
 
 console.log('\x1b[45m  Runner started  \x1b[0m');
 
@@ -40,7 +40,7 @@ if (auto) {
     debounce((_, f) => {
       const { ext, dir } = path.parse(f);
       // Only restart the server if it is a watched extensions and not ignored directory
-      if (WATCHED_EXTENSIONS.indexOf(ext.slice(1)) !== -1 && IGNORED_DIRS.indexOf(dir.split('/'))[1] === -1) {
+      if (WATCHED_EXTENSIONS.indexOf(ext) !== -1 && IGNORED_DIRS.indexOf(dir.split('/')[1]) === -1) {
         console.log(`\x1b[45m${f} changed\x1b[0m`);
         console.log('\x1b[45m  Runner restarted  \x1b[0m');
         proc.kill('SIGTERM');

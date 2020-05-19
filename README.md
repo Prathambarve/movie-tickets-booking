@@ -7,9 +7,12 @@ A place where you can easily buy movie tickets.
 ### Docker way
 
 - Rename `.env.example` to `.env`
+
   **If you change the port in `.env`, be sure to change it in `docker-compose.yml`**
-- Run `docker-compose up`
-- Visit [localhost:9000](http://localhost:9000) (or the port you used in `.env` file)
+
+* Run `docker-compose up`
+* Connect to node docker container and run migrations with `npm run migrate`
+* Visit [localhost:9000](http://localhost:9000) (or the port you used in `.env` file)
 
 ### Without docker
 
@@ -18,6 +21,7 @@ To run the application without docker you should have postgres client installed 
 - Rename `.env.example` to `.env`.
 - Set `PG_CONN` to your postgres connection string
 - Run `npm install`
+- Run `npm run migrate`
 - To start the application with development server run `npm run dev`
 - Visit [localhost:9000](http://localhost:9000) (or the port you used in `.env` file)
 
