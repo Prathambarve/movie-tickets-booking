@@ -17,7 +17,7 @@
     "dev": "node ./utils/runner.js",
     "migrate": "node ./utils/migrate.js",
     "format": "prettier --config .prettierrc --ignore-path .prettierignore --write **/*.{js,json,yml,css,html,md}",
-    "lint": "eslint -c ./.eslintrc.json --color **/*.js"
+    "lint": "eslint -c ./.eslintrc.json --color --ext .js ."
   },
   "dependencies": {
     "pg": "^8.1.0"

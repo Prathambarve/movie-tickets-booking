@@ -1,14 +1,22 @@
 {
-  "extends": ["eslint:recommended", "plugin:node/recommended", "plugin:prettier/recommended"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:node/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "parserOptions": {
+    "sourceType": "script"
+  },
   "env": {
     "es6": true,
     "node": true,
     "commonjs": true
   },
-  "parserOptions": {
-    "sourceType": "module"
-  },
   "rules": {
-    "no-process-exit": "off"
+    "no-process-exit": "off",
+    "strict": [
+      2,
+      "global"
+    ]
   }
 }
