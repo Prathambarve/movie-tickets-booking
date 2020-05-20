@@ -11,7 +11,7 @@ module.exports = {
         data: { message: 'expected to get an object with id field as int' },
       };
 
-    const result = await application.db.query('SELECT id, city, address, title FROM cinema WHERE id=$1', [params.id]);
+    const result = await application.db.query('SELECT * FROM cinema WHERE id=$1', [params.id]);
     return result.rows[0] || {};
   },
 };

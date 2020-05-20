@@ -5,9 +5,9 @@ const util = require('util');
 const path = require('path');
 
 const COLORS = {
-  info: { fg: '\x1b[36m', bg: '\x1b[46m' },
-  debug: { fg: '\x1b[33m', bg: '\x1b[43m' },
-  error: { fg: '\x1b[31m', bg: '\x1b[41m' },
+  info: '\x1b[36m',
+  debug: '\x1b[33m',
+  error: '\x1b[31m',
 };
 
 // Class responsible for logging
@@ -20,7 +20,7 @@ class Logger {
   write(level, msg) {
     const date = new Date().toISOString();
     const color = COLORS[level];
-    const line = `${color.bg}${level.toUpperCase()}\x1b[0m ${color.fg}${date}\t${msg}\x1b[0m\n`;
+    const line = `${color}${level.toUpperCase()} ${date}\t${msg}\x1b[0m\n`;
     if (level === 'error') {
       process.stderr.write(line);
     } else {

@@ -4,13 +4,15 @@ module.exports = {
   name: 'cinema.create',
   type: 'method',
   handler: async (application, params) => {
-    // TODO: Validation
-    // This is temporary
-    if (Array.isArray(params))
-      throw {
-        code: '-32602',
-        data: { message: 'expected to get an object with city, address and title, got an array' },
-      };
+    const { Validation, Field } = application.validation;
+    const validationObj = new Validation(
+      params,
+      new Field('city').required().length({ min: 4, max: 32 }),
+      new Field('address').required().length({ min: 4, max: 32 }),
+      new Field('title').required().length({ min: 4, max: 32 }),
+    );
+
+    if (!validationObj.valid) throw validationObj.errors;
 
     const result = await application.db.query(
       'INSERT INTO cinema (city, address, title) VALUES ($1, $2, $3) RETURNING id;',

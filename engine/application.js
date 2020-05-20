@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
+const validation = require('./validation');
 const debounce = require('../helpers/debounce');
 
 const fsp = fs.promises;
@@ -44,6 +45,8 @@ class Application {
 
     this.cacheApi(path.join(APP_PATH, 'api'));
     this.cacheDir(STATIC_DIR);
+
+    this.validation = validation;
   }
 
   // Cache api methods to Map
@@ -131,6 +134,7 @@ class Application {
       const result = await apiMethod.handler(this, body.params);
       return { jsonrpc: '2.0', id: body.id, result };
     } catch (err) {
+      this.logger.error(JSON.stringify(err));
       return { jsonrpc: '2.0', id: body.id, error: err };
     }
   }
