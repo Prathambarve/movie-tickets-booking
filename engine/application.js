@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const validation = require('./validation');
+const auth = require('../helpers/auth');
 const debounce = require('../helpers/debounce');
 
 const fsp = fs.promises;
@@ -47,6 +48,7 @@ class Application {
     this.cacheDir(STATIC_DIR);
 
     this.validation = validation;
+    this.auth = auth;
   }
 
   // Cache api methods to Map
