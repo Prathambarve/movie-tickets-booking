@@ -1,5 +1,7 @@
 #!/bin/bash
 # For git hooks to work run:
 # git config core.hooksPath .githooks
+exec bash
+
 npm run format
 npm run lint
