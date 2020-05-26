@@ -2,11 +2,10 @@
 
 const path = require('path');
 
-const redis = require('redis');
-
 const Logger = require('./engine/logger');
 const Config = require('./engine/config');
 const Server = require('./engine/server');
+const Session = require('./engine/session');
 const Database = require('./engine/database');
 const Application = require('./engine/application');
 const dotenv = require('./utils/dotenv');
@@ -25,8 +24,8 @@ const DOTENV_PATH = path.join(APP_PATH, '.env');
 
   Object.assign(app, { logger });
 
-  app.db = new Database(config.get('database'), app);
-  app.redis = redis.createClient(config.get('database').redisConnection);
+  app.db = new Database(config.get('database').pgConnection, app);
+  app.sessions = new Session(config.get('database').redisConnection, app);
   if ((await app.db.ping(5)) === false) process.exit(1);
 
   app.server = new Server(config.get('server'), app);

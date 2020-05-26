@@ -55,7 +55,7 @@ const getRanMigrationIds = async db => {
   // Create needed dependencies;
   const config = await new Config(CONFIG_PATH).load();
   const logger = new Logger(LOG_PATH);
-  const db = new Database(config.get('database'), { logger });
+  const db = new Database(config.get('database').pgConnection, { logger });
 
   // Ping the database
   await db.query('select 1+1');

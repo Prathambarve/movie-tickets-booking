@@ -23,7 +23,7 @@ class Server {
     this.port = config.port;
     this.hostname = config.hostname;
     this.application = application;
-    this.instance = http.createServer(this.listener(application));
+    this.instance = http.createServer(this.listener());
     this.instance.listen(this.port, this.hostname);
     this.application.logger.info(`server on ${this.hostname}:${this.port}`);
   }
@@ -97,6 +97,7 @@ class Server {
       if (pathname !== '/' && pathname[pathname.length - 1] === '/') {
         pathname = pathname.slice(0, -2);
       }
+
       request.pathname = pathname;
 
       if (typeof query === 'string') {
@@ -104,6 +105,12 @@ class Server {
       } else {
         request.query = '';
       }
+
+      // Parse cookies and deal with sessions
+      this.application.sessions.parseCookies(request);
+      // Set the session cookie if not already set
+      if (request.cookies.sid === undefined) this.application.sessions.startSession(response);
+
       // Route to the appropriate function
       if (pathname.startsWith('/static/')) {
         this.serveStatic(request, response);

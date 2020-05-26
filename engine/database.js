@@ -3,9 +3,9 @@
 const pg = require('pg');
 
 class Database {
-  constructor(config, application) {
+  constructor(connectionString, application) {
     this.application = application;
-    this.pool = new pg.Pool({ connectionString: config.pgConnection });
+    this.pool = new pg.Pool({ connectionString });
   }
 
   // A function to ping the database n times with 4 seconds in between tries
