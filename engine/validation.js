@@ -58,6 +58,28 @@ class Field {
 
     return this;
   }
+
+  email() {
+    this._filters.push(input => {
+      if (
+        !/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+          input,
+        )
+      ) {
+        throw `${input} is not a valid email`;
+      }
+    });
+
+    return this;
+  }
+
+  equalsTo(match) {
+    this._filters.push(input => {
+      if (input !== match) throw `${this._fieldName} does not match ${match}`;
+    });
+
+    return this;
+  }
 }
 
 module.exports = { Validation, Field };
