@@ -17,12 +17,13 @@ module.exports = {
     const salt = application.auth.genSalt();
     const hash = await application.auth.hashPassword(params.password, salt);
 
-    // return [params.email, salt, hash];
-    const result = await application.db.query(
-      'INSERT INTO users (email, salt, hash) VALUES ($1, $2, $3) RETURNING id;',
-      [params.email, salt, hash],
-    );
+    // TODO: Validate unique fields before saving to db
+    await application.db.query('INSERT INTO users (email, salt, hash) VALUES ($1, $2, $3);', [
+      params.email,
+      salt,
+      hash,
+    ]);
 
-    return result.rows[0];
+    return { message: 'success' };
   },
 };

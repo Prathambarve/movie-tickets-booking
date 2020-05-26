@@ -2,22 +2,21 @@ version: '3'
 services:
   web:
     build: .
-    command: 'npm run dev -- --auto'
+    command: npm run dev -- --auto
     ports:
-      - 9000:9000
+      - '9000:9000'
     volumes:
       - '.:/app'
-      - '/app/node_modules'
+      - /app/node_modules
     depends_on:
-      - 'postgres'
-
+      - postgres
   postgres:
     image: 'postgres:12'
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_USER: 'user'
-      POSTGRES_PASSWORD: 'pass'
-      POSTGRES_DB: 'db'
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: db
     volumes:
-      - ./postgres-data:/var/lib/postgresql
+      - './postgres-data:/var/lib/postgresql'
