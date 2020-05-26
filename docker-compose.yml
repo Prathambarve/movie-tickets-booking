@@ -10,6 +10,7 @@ services:
       - /app/node_modules
     depends_on:
       - postgres
+      - redis
   postgres:
     image: 'postgres:12'
     ports:
@@ -20,3 +21,9 @@ services:
       POSTGRES_DB: db
     volumes:
       - './postgres-data:/var/lib/postgresql'
+  redis:
+    image: 'redislabs/rejson'
+    ports:
+      - '6379:6379'
+    volumes:
+      - './redis-data:/bitnami/redis/data'

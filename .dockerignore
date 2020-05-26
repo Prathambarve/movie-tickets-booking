@@ -1,0 +1,4 @@
+*.log
+
+.githooks/
+node_modules/
