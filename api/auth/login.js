@@ -13,20 +13,17 @@ module.exports = {
 
     if (!validationObj.valid) throw validationObj.errors;
 
+    // Get user and create new hash with the salt from db
     const result = await application.db.query('SELECT * FROM users WHERE email = $1;', [params.email]);
     const user = result.rows[0];
     const hash = await application.auth.hashPassword(params.password, user.salt);
 
-    // TODO: Assign session to user
-    if (user.hash === hash)
-      return (({ id, email, first_name, last_name, confirmed_email }) => ({
-        id,
-        email,
-        firstName: first_name,
-        lastName: last_name,
-        confirmed_email,
-      }))(user);
-
-    return { message: 'invalid login credentials' };
+    if (user.hash === hash) {
+      // Add userId key to user's session in redis
+      application.sessions.set(params._sid, '.userId', user.id);
+      return { message: 'login successful' };
+    } else {
+      return { message: 'invalid login credentials' };
+    }
   },
 };

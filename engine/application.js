@@ -116,6 +116,8 @@ class Application {
     const apiMethod = this.api.get(body.method);
     if (apiMethod === undefined) return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32601'], id: body.id || null };
 
+    // Get user from session and set it to `_user` key in params object
+
     // If the method is a notification start running it and return
     if (apiMethod.type === 'notification') {
       apiMethod.handler(this, body.params);
@@ -136,7 +138,7 @@ class Application {
       const result = await apiMethod.handler(this, body.params);
       return { jsonrpc: '2.0', id: body.id, result };
     } catch (err) {
-      this.logger.error(JSON.stringify(err));
+      this.logger.error(err.stack);
       return { jsonrpc: '2.0', id: body.id, error: err };
     }
   }

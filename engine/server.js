@@ -80,10 +80,15 @@ class Server {
     if (Array.isArray(body)) {
       result = [];
       for (const r of body) {
+        // Pass in session id to params for access in handlers
+        r.params._sid = request.cookies.sid;
         const methodResult = await this.application.apiCall(r);
         if (methodResult !== undefined) result.push(methodResult);
       }
-    } else result = await this.application.apiCall(body);
+    } else {
+      body.params._sid = request.cookies.sid;
+      result = await this.application.apiCall(body);
+    }
 
     if (result === undefined || result.length === 0) response.end();
     else response.end(JSON.stringify(result));

@@ -4,7 +4,6 @@ module.exports = {
   name: 'cinema.get',
   type: 'method',
   handler: async (application, params) => {
-    // TODO: Validation
     if (Array.isArray(params) || typeof params.id !== 'number')
       throw {
         code: '-32602',
