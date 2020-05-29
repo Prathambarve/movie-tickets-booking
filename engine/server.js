@@ -81,11 +81,13 @@ class Server {
       result = [];
       for (const r of body) {
         // Pass in session id to params for access in handlers
+        if (!r.params) r.params = {};
         r.params._sid = request.cookies.sid;
         const methodResult = await this.application.apiCall(r);
         if (methodResult !== undefined) result.push(methodResult);
       }
     } else {
+      if (!body.params) body.params = {};
       body.params._sid = request.cookies.sid;
       result = await this.application.apiCall(body);
     }

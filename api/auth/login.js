@@ -20,7 +20,7 @@ module.exports = {
 
     if (user.hash === hash) {
       // Add userId key to user's session in redis
-      application.sessions.set(params._sid, '.userId', user.id);
+      await application.sessions.set(params._sid, '.userId', user.id);
       return { message: 'login successful' };
     } else {
       return { message: 'invalid login credentials' };

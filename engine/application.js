@@ -117,6 +117,13 @@ class Application {
     if (apiMethod === undefined) return { jsonrpc: '2.0', error: JSONRPC_ERRORS['-32601'], id: body.id || null };
 
     // Get user from session and set it to `_user` key in params object
+    // Get users id from session
+    const userSession = await this.sessions.get(body.params._sid);
+    const { userId } = JSON.parse(userSession);
+    if (userId) {
+      const result = await this.db.query('SELECT id, email, first_name, last_name FROM users WHERE id=$1;', [userId]);
+      body.params._user = result.rows[0];
+    }
 
     // If the method is a notification start running it and return
     if (apiMethod.type === 'notification') {

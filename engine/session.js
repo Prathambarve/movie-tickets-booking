@@ -37,12 +37,22 @@ class Session {
     this.redis.multi().json_set(sessionId, '.', '{}').expire(sessionId, SESSION_EXPIRATION_TIME).exec();
   }
 
-  get(...options) {
-    return this.redis.json_get(...options);
+  async get(...options) {
+    return new Promise((resolve, reject) => {
+      this.redis.json_get(...options, (err, value) => {
+        if (err) reject(err);
+        resolve(value);
+      });
+    });
   }
 
-  set(...options) {
-    return this.redis.json_set(...options);
+  async set(...options) {
+    return new Promise((resolve, reject) => {
+      this.redis.json_set(...options, (err, value) => {
+        if (err) reject(err);
+        resolve(value);
+      });
+    });
   }
 }
 
